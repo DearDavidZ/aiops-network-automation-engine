@@ -1,0 +1,14 @@
+---
+cisco_ios:
+  platform: cisco_ios
+  port: 22
+  data:
+    vendor: Cisco
+    os_type: IOS-XE
+
+mikrotik_routeros:
+  platform: mikrotik_routeros
+  port: 22
+  data:
+    vendor: MikroTik
+    os_type: RouterOS

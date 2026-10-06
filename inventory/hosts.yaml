@@ -1,0 +1,16 @@
+---
+core-sw-01.corp:
+  hostname: "192.168.10.1"
+  groups:
+    - cisco_ios
+  data:
+    role: "distribution-core"
+    site: "gt-dc-central"
+
+edge-rtr-01.branch:
+  hostname: "192.168.20.1"
+  groups:
+    - mikrotik_routeros
+  data:
+    role: "wan-edge"
+    site: "gt-branch-zone4"

@@ -1,0 +1,7 @@
+nornir==3.4.1
+nornir-netmiko==0.2.0
+nornir-utils==0.2.0
+pydantic==2.8.2
+python-dotenv==1.0.1
+setuptools==69.5.1
+google-genai==0.5.0

@@ -1,0 +1,26 @@
+# Entorno Virtual Aislado
+.venv/
+env/
+venv/
+
+# Caché y Bytecode de Python
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# Variables de Entorno y Secretos (Zero-Trust)
+.env
+*.env.local
+
+# Logs Operativos y Rastros de Auditoría
+*.log
+logs/
+
+# Configuraciones de Entornos de Desarrollo (IDEs)
+.vscode/
+.idea/
+
+# Archivos de Sistema Operativo
+.DS_Store
+Thumbs.db

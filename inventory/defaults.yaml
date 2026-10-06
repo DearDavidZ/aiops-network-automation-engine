@@ -1,0 +1,7 @@
+---
+connection_options:
+  netmiko:
+    extras:
+      timeout: 15
+      banner_timeout: 15
+      fast_cli: false
