@@ -1,0 +1,9 @@
+{
+  "model": "gemini-3.8-flash",
+  "status": "provider_error",
+  "attempts": 2,
+  "elapsed_seconds": 39.38,
+  "circuit_state": "closed",
+  "diagnosis": "ANÁLISIS IA NO DISPONIBLE: error del proveedor. No determina el estado de la red.",
+  "input": "fixed synthetic event; no network equipment logs"
+}

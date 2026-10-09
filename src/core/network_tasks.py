@@ -1,38 +1,63 @@
 import logging
-from nornir.core.task import Task, Result
+
+from netmiko.exceptions import NetmikoAuthenticationException, NetmikoTimeoutException
+from nornir.core.exceptions import NornirSubTaskError
+from nornir.core.task import Result, Task
 from nornir_netmiko.tasks import netmiko_send_command
-from netmiko.exceptions import NetmikoTimeoutException, NetmikoAuthenticationException
+
 logger: logging.Logger = logging.getLogger("NetworkEngine")
 
-def fetch_telemetry_logs(task: Task, command: str) -> Result:
+TELEMETRY_COMMANDS: dict[str, str] = {
+    "cisco_ios": "show logging",
+    "mikrotik_routeros": "/log print",
+}
+
+
+def fetch_telemetry_logs(task: Task) -> Result:
     """
     Despacha comandos de telemetría de forma concurrente hacia la infraestructura.
     Incorpora blindaje contra particiones de red y fallos de autenticación AAA.
-    
+
     Args:
         task (Task): El hilo de ejecución inyectado por el orquestador Nornir.
-        command (str): El comando CLI a ejecutar (ej. 'show logging').
-        
+
     Returns:
         Result: Objeto estructurado que contiene el payload o el error encapsulado.
     """
     logger.info("Hilo iniciado para nodo [%s] -> Extrayendo telemetría...", task.host.name)
-    
+
     try:
+        command = TELEMETRY_COMMANDS.get(task.host.platform or "")
+        if command is None:
+            logger.error("Plataforma no soportada en [%s].", task.host.name)
+            return Result(
+                host=task.host,
+                failed=True,
+                result="UNSUPPORTED_PLATFORM: no se ejecutaron comandos.",
+            )
         execution = task.run(
             task=netmiko_send_command,
             command_string=command,
             enable=False,
-            severity_level=logging.DEBUG
+            severity_level=logging.DEBUG,
         )
         logger.info("Extracción exitosa en nodo [%s]", task.host.name)
         return Result(host=task.host, result=execution.result)
-        
-    except (NetmikoTimeoutException, NetmikoAuthenticationException) as net_err:
-        error_msg = f"Control de Fallo de Red - Conectividad/Autenticación denegada: {str(net_err)}"
-        logger.error("Alerta en [%s]: %s", task.host.name, error_msg)
-        return Result(host=task.host, result=error_msg, failed=True)
-        
+
+    except NornirSubTaskError as exc:
+        cause = next((item.exception for item in exc.result if item.exception is not None), exc)
+        return network_failure(task, cause)
     except Exception as exc:
-        logger.critical("Colapso no controlado en [%s]: %s", task.host.name, str(exc), exc_info=True)
-        return Result(host=task.host, result=f"Error Crítico: {str(exc)}", failed=True)
+        return network_failure(task, exc)
+
+
+def network_failure(task: Task, cause: Exception) -> Result:
+    """Conserva la excepción para auditoría sin inventar su causa raíz."""
+    if isinstance(cause, NetmikoAuthenticationException):
+        category = "AUTHENTICATION_ERROR"
+    elif isinstance(cause, NetmikoTimeoutException):
+        category = "CONNECTION_TIMEOUT"
+    else:
+        category = "COLLECTION_ERROR"
+    logger.error("Recolección fallida en [%s]: %s", task.host.name, category)
+    return Result(host=task.host, result=category, exception=cause, failed=True)

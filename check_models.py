@@ -1,40 +1,75 @@
-import os
+"""Catálogo de modelos y prueba explícita de inferencia con datos sintéticos."""
+
+import argparse
+import logging
+import sys
+from pathlib import Path
+
 from dotenv import load_dotenv
 from google import genai
+from google.genai import types
 
-def audit_authorized_models() -> None:
-    """
-    Script de auditoría SRE: Interroga la API de Google para descubrir
-    los modelos fundacionales explícitamente autorizados para la credencial actual.
-    """
-    load_dotenv(override=True)
-    api_key = os.environ.get("AI_API_KEY")
-    
-    if not api_key:
-        print("[ERROR] Credencial AI_API_KEY no encontrada en .env")
-        return
+from src.core.ai_analyzer import analyze_telemetry
+from src.core.ai_config import AIConfigurationError, AISettings
 
-    print("Iniciando auditoría de infraestructura en Google Cloud...")
-    print(f"Token detectado: {api_key[:10]}... (Truncado por seguridad)")
-    
+logger = logging.getLogger("ModelAudit")
+
+
+def audit_authorized_models() -> int:
+    """El catálogo no garantiza acceso a inferencia ni cuota. Limita a 100 modelos."""
+    load_dotenv(Path(__file__).resolve().parent / ".env", override=False)
+    client: genai.Client | None = None
     try:
-        # Inicialización del cliente moderno
-        client = genai.Client(api_key=api_key)
-        
-        print("\n--- Catálogo de Modelos Autorizados ---")
-        authorized_count = 0
-        
-        # Petición GET al endpoint /models
-        for model in client.models.list():
-            # Filtramos solo los modelos que soportan generación de contenido
-            if 'generateContent' in model.supported_generation_methods:
-                print(f"✅ Habilitado: {model.name}")
-                authorized_count += 1
-                
-        print(f"\nAuditoría finalizada. Total de modelos soportados: {authorized_count}")
-
+        settings = AISettings.from_environment()
+        client = genai.Client(
+            api_key=settings.api_key,
+            vertexai=False,
+            enterprise=False,
+            http_options=settings.http_options(),
+        )
+        count = 0
+        for index, model in enumerate(
+            client.models.list(config=types.ListModelsConfig(page_size=100))
+        ):
+            if "generateContent" in (model.supported_actions or []):
+                print(f"Modelo publicado con generateContent: {model.name}")
+                count += 1
+            if index >= 99:
+                print("Límite local: se revisaron los primeros 100 modelos.")
+                break
+        print(f"Catálogo consultado: {count} modelos con generación. Acceso no verificado.")
+        return 0
+    except AIConfigurationError as exc:
+        logger.error("Configuración: %s", exc)
+        return 1
     except Exception as exc:
-        print(f"\n[CRÍTICO] Fallo en la interrogación de la API: {exc}")
+        logger.error("Consulta del catálogo fallida: %s", type(exc).__name__)
+        return 1
+    finally:
+        if client is not None:
+            try:
+                client.close()
+            except Exception as exc:
+                logger.warning("Fallo al cerrar cliente: %s", type(exc).__name__)
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--probe", action="store_true", help="Consume API con un log sintético fijo"
+    )
+    args = parser.parse_args()
+    if not args.probe:
+        return audit_authorized_models()
+    load_dotenv(Path(__file__).resolve().parent / ".env", override=False)
+    result = analyze_telemetry(
+        device_name="synthetic-node",
+        payload="Synthetic laboratory event: interface ethernet1 changed state to down.",
+    )
+    print(result.message)
+    return 0 if result.ok else 1
+
 
 if __name__ == "__main__":
-    audit_authorized_models()
+    logging.basicConfig(level=logging.INFO)
+    sys.exit(main())

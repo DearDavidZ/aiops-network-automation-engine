@@ -1,7 +1,8 @@
 import logging
 import sys
 from pathlib import Path
-from typing import Dict, Any
+from typing import Any
+
 from nornir import InitNornir
 from nornir.core import Nornir
 from nornir.core.inventory import Host
@@ -18,13 +19,13 @@ logger: logging.Logger = logging.getLogger("InventoryValidator")
 def initialize_orchestrator(config_path: Path) -> Nornir:
     """
     Inicializa el motor de Nornir verificando la existencia del archivo maestro de configuración.
-    
+
     Args:
         config_path (Path): Ruta al archivo config.yaml.
-        
+
     Returns:
         Nornir: Instancia inicializada del orquestador.
-        
+
     Raises:
         FileNotFoundError: Si la ruta de configuración es inválida.
         Exception: Ante fallos de parsing de YAML o esquemas de inventario corruptos.
@@ -45,12 +46,12 @@ def initialize_orchestrator(config_path: Path) -> Nornir:
 def audit_inventory_schema(nr_instance: Nornir) -> None:
     """
     Ejecuta aserciones estrictas sobre los nodos cargados en memoria.
-    
+
     Args:
         nr_instance (Nornir): Instancia activa del orquestador.
     """
-    hosts_pool: Dict[str, Host] = nr_instance.inventory.hosts
-    
+    hosts_pool: dict[str, Host] = nr_instance.inventory.hosts
+
     if not hosts_pool:
         logger.error("Auditoría fallida: El inventario no contiene dispositivos.")
         sys.exit(1)
@@ -71,7 +72,7 @@ def audit_inventory_schema(nr_instance: Nornir) -> None:
         # Auditoría de metadata empresarial
         site: Any = host_obj.data.get("site", "N/A")
         role: Any = host_obj.data.get("role", "N/A")
-        
+
         logger.info(
             "Nodo verificado: [%s] -> IP: %s | Plataforma: %s | Rol: %s | Sitio: %s",
             host_name,

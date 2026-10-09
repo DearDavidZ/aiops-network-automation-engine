@@ -1,0 +1,21 @@
+{
+  "mode": "simulation_only_no_api",
+  "events": 6,
+  "simulated_latency_seconds": 0.1,
+  "rpm_for_demo_only": 6000,
+  "seconds_by_worker_count": {
+    "1": 0.594,
+    "3": 0.234
+  },
+  "speedup": 2.54,
+  "circuit_state": "open",
+  "provider_attempts_before_open": 2,
+  "statuses_after_provider_failure": [
+    "provider_error",
+    "provider_error",
+    "circuit_open",
+    "circuit_open",
+    "circuit_open",
+    "circuit_open"
+  ]
+}
