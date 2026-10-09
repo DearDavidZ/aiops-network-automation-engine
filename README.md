@@ -3,9 +3,7 @@
 ![Status](https://img.shields.io/badge/Status-Experimental-yellow.svg)
 ![Python](https://img.shields.io/badge/Tested-Python_3.11%20%7C%203.12-blue.svg)
 
-Proyecto de aprendizaje y portafolio de estudiante: recolección concurrente de logs Cisco IOS y MikroTik RouterOS con análisis heurístico opcional mediante Gemini. El objetivo es aprender automatización, manejo de fallos y pruebas reproducibles. Las hipótesis requieren validación humana. No se han medido mejoras de MTTR ni capacidad predictiva.
-
-Empieza por [la guía paso a paso](docs/APRENDER_PASO_A_PASO.md). Explica qué leer, qué ejecutar y cómo comprobar lo aprendido sin equipos ni gasto de API.
+Prototipo de automatización de redes que recolecta logs Cisco IOS y MikroTik RouterOS de forma concurrente y ofrece análisis heurístico opcional mediante Gemini. Incluye pruebas simuladas, límites de solicitudes y recuperación ante fallos del proveedor. Las hipótesis requieren validación humana. No se han medido mejoras de MTTR ni capacidad predictiva.
 
 ## Flujo actual
 
@@ -42,7 +40,7 @@ Las pruebas usan Nornir y el SDK Gemini reales con transporte HTTP simulado, ade
 
 Cada propuesta de cambios y cada actualización de `main` ejecutan [GitHub Actions](.github/workflows/ci.yml): Ruff revisa estilo y formato, mypy revisa tipos de la aplicación, Actionlint valida el workflow y pytest comprueba el comportamiento en Windows y Linux con Python 3.11 y 3.12. No se proporcionan claves ni se llama a Gemini desde CI.
 
-Las acciones están fijadas por SHA; las dependencias directas e indirectas, por versiones y hashes. Los archivos `requirements*.txt` declaran las dependencias; `requirements*.lock.txt` contienen la resolución reproducible. Véase [fase 4](docs/FASE_4.md) para reproducir los controles y actualizar el bloqueo.
+Las acciones están fijadas por SHA; las dependencias directas e indirectas, por versiones y hashes. Los archivos `requirements*.txt` declaran las dependencias; `requirements*.lock.txt` contienen la resolución reproducible. Véase [la documentación técnica](docs/OPERACION_Y_VALIDACION.md) para reproducir los controles y actualizar el bloqueo.
 
 ## Laboratorio
 
@@ -59,7 +57,7 @@ Ejecutar `python -m src.run_engine` para recolectar y analizar. Los logs depurad
 | `AI_TIMEOUT_MS` | 20000 | 1000–120000 ms, timeout HTTP; no es plazo global del proceso. |
 | `AI_MAX_PAYLOAD_CHARS` | 8000 | 256–32000 caracteres depurados. Se rechaza exceso; no se trunca. |
 
-Se rechaza entrada original mayor de 65536 caracteres y claves privadas PEM. Cada intento HTTP desactiva reintentos internos; el coordinador permite hasta `1 + AI_MAX_RETRIES` intentos solo ante errores transitorios. Las respuestas distinguen observaciones interpretadas, hipótesis no confirmadas y comprobaciones humanas, sin ejecutar acciones. Véase [fase 2: contratos y límites](docs/FASE_2.md).
+Se rechaza entrada original mayor de 65536 caracteres y claves privadas PEM. Cada intento HTTP desactiva reintentos internos; el coordinador permite hasta `1 + AI_MAX_RETRIES` intentos solo ante errores transitorios. Las respuestas distinguen observaciones interpretadas, hipótesis no confirmadas y comprobaciones humanas, sin ejecutar acciones. Véanse [los contratos y límites](docs/OPERACION_Y_VALIDACION.md).
 
 | Salida | Significado |
 |---|---|
@@ -77,7 +75,7 @@ Se rechaza entrada original mayor de 65536 caracteres y claves privadas PEM. Cad
 - Concurrencia y ritmo limitados por proceso; el límite debe ajustarse a la cuota real. Varias instancias no comparten cuota ni circuit breaker.
 - Faltan pruebas con equipos reales y detección de rechazos CLI. La demo es sintética y no demuestra MTTR ni rendimiento empresarial.
 
-Consultar [la auditoría y el plan por fases](docs/AUDITORIA.md).
+Consultar [la operación y evidencia de validación](docs/OPERACION_Y_VALIDACION.md).
 
 ## Resiliencia y evidencia
 
@@ -90,4 +88,4 @@ Consultar [la auditoría y el plan por fases](docs/AUDITORIA.md).
 
 Las conexiones SSH se cierran antes de esperar por cuota o inferencia.
 
-Demo sin clave ni red: `python -m scripts.demo_resilience`. Véanse [fase 3](docs/FASE_3.md), [resultados de simulación](docs/DEMO_RESULTS.json) y [prueba real exitosa](docs/REAL_PROBE_ALTERNATE.json).
+Demo sin clave ni red: `python -m scripts.demo_resilience`. Actualiza `docs/DEMO_RESULTS.json` con la medición local. Véanse [los controles de resiliencia](docs/OPERACION_Y_VALIDACION.md), [resultados de simulación](docs/DEMO_RESULTS.json) y [prueba real exitosa](docs/REAL_PROBE_ALTERNATE.json).
