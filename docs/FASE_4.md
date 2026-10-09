@@ -32,6 +32,26 @@ Después instala el bloqueo en un entorno nuevo y ejecuta los controles. Regener
 
 Windows: 110 pruebas aprobadas con Python 3.11.17 y 110 con Python 3.12.10. Ruff, formato, mypy, Actionlint y `pip check` sin errores. La prueba en 3.11 utilizó un entorno nuevo instalado con hashes. Las restricciones de carpetas temporales del entorno del asistente requirieron ejecutar pytest fuera de su aislamiento; no se cambió la lógica de las pruebas por ello.
 
-Siguen las advertencias de `pkg_resources` y `telnetlib`. No se hicieron nuevas llamadas a Gemini en esta fase. Las pruebas en Linux se comprueban mediante GitHub Actions; su resultado debe consultarse en el run asociado al pull request.
+Siguen las advertencias de `pkg_resources` y `telnetlib`. No se hicieron nuevas llamadas a Gemini en esta fase.
+
+## Resultado comprobado en GitHub
+
+El [run 1 de GitHub Actions](https://github.com/DearDavidZ/aiops-network-automation-engine/actions/runs/38000826671), asociado al commit `0cd936dc8b53325147415036bc25c84c8de13fd8` del [borrador #1](https://github.com/DearDavidZ/aiops-network-automation-engine/pull/1), terminó con cinco trabajos aprobados. Se revisaron también los logs de pytest:
+
+| Entorno | Resultado | Tiempo de pytest |
+|---|---|---|
+| Windows / Python 3.11 | 110 aprobadas | 6.50 s |
+| Windows / Python 3.12 | 110 aprobadas | 10.65 s |
+| Linux / Python 3.11 | 110 aprobadas | 2.28 s |
+| Linux / Python 3.12 | 110 aprobadas | 2.49 s |
+| Calidad en Linux / Python 3.12 | Ruff, formato, mypy y Actionlint aprobados | Consultar pasos del run |
+
+Cada suite mostró dos advertencias heredadas. Los tiempos incluyen pruebas simuladas y no miden rendimiento de red ni del proveedor. Para commits posteriores consulta sus propios checks en el PR.
 
 Los archivos de fases anteriores conservan resultados históricos. Para estudiar el estado actual empieza por README y la guía, y usa el resultado de CI del commit que estés revisando. No se configura protección de ramas ni se incorpora automáticamente la propuesta a `main`.
+
+## Fuentes para profundizar
+
+- [GitHub: eventos que activan workflows](https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/trigger-a-workflow).
+- [uv: generación de bloqueos](https://docs.astral.sh/uv/pip/compile/).
+- [Actionlint: publicación oficial de la versión utilizada](https://github.com/rhysd/actionlint/releases/tag/v1.7.12).

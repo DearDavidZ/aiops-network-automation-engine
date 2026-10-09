@@ -49,7 +49,7 @@ Identifica qué se prepara, qué función se ejecuta y qué comprueba cada `asse
 .venv\Scripts\python.exe -m pytest tests/test_ai_resilience.py -v
 ```
 
-La demo imprime resultados de una simulación. Compara un trabajador con tres: los tiempos cambian entre máquinas y no representan rendimiento de Gemini ni mejora de MTTR. Lee `test_breaker_recovery_and_stale_response`: un reloj simulado permite comprobar recuperación sin esperar tiempo real.
+La demo imprime resultados de una simulación y actualiza `docs/DEMO_RESULTS.json` con tus tiempos. Ese archivo aparecerá modificado en Git; no tienes que publicar tu medición para completar el ejercicio. Compara un trabajador con tres: los tiempos cambian entre máquinas y no representan rendimiento de Gemini ni mejora de MTTR. Lee `test_breaker_recovery_and_stale_response`: un reloj simulado permite comprobar recuperación sin esperar tiempo real.
 
 **Qué aprender:** la concurrencia reduce espera cuando hay tareas independientes; limitarla ayuda a controlar carga. El circuit breaker evita insistir ante fallos transitorios, pero no corrige al proveedor.
 
